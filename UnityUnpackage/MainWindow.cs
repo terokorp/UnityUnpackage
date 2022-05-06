@@ -54,9 +54,18 @@ namespace UnityUnpackage
             Directory.CreateDirectory(targetFolder);
 
             ExtractTGZ(filename, tempFolder);
-            ProcessExtracted(tempFolder, targetFolder);
-
-            Directory.Delete(tempFolder, true);
+            try
+            {
+                ProcessExtracted(tempFolder, targetFolder);
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show("Oops, something went wrong:" + Environment.NewLine + e.ToString());
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
         }
 
         public void ExtractTGZ(string gzArchiveName, string destFolder)
@@ -77,15 +86,15 @@ namespace UnityUnpackage
             assetCounter = 0;
             foreach (string d in Directory.EnumerateDirectories(tempFolder))
             {
-                string relativePath = "";
+                string[] relativePath;
                 string targetFullPath = "";
                 string targetFullFile = "";
 
                 if (File.Exists(Path.Combine(d, "pathname")))
                 {
-                    relativePath = File.ReadAllText(Path.Combine(d, "pathname"));
-                    targetFullPath = Path.GetDirectoryName(Path.Combine(targetFolder, relativePath));
-                    targetFullFile = Path.Combine(targetFolder, relativePath);
+                    relativePath = File.ReadAllLines(Path.Combine(d, "pathname"));
+                    targetFullPath = Path.GetDirectoryName(Path.Combine(targetFolder, relativePath[0]));
+                    targetFullFile = Path.Combine(targetFolder, relativePath[0]);
                 }
 
                 // If asset file exists
